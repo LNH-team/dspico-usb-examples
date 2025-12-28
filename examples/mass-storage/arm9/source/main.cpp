@@ -6,7 +6,9 @@
 #include <libtwl/rtos/rtosEvent.h>
 #include <libtwl/ipc/ipcSync.h>
 #include <libtwl/ipc/ipcFifoSystem.h>
+
 #include "dldiIpc.h"
+#include "ui.h"
 
 static rtos_event_t sVblankEvent;
 
@@ -17,10 +19,8 @@ static void vblankIrq(u32 irqMask)
 
 int main(int argc, char* argv[])
 {
-    *(vu32*)0x04000000 = 0x10000;
-    *(vu16*)0x05000000 = 31 << 10;
-    *(vu16*)0x0400006C = 0;
-
+    ui_init();
+	
     mem_setDsCartridgeCpu(EXMEMCNT_SLOT1_CPU_ARM7);
 
     rtos_initIrq();
@@ -31,15 +31,13 @@ int main(int argc, char* argv[])
 
     while (ipc_getArm7SyncBits() != 7);
 
-    if (dldi_init())
-    {
-        *(vu16*)0x05000000 = (31 << 5);
-    }
-    else
-    {
-        *(vu16*)0x05000000 = 31;
-    }
-
+    if (dldi_init()) {
+		UpdateDLDIText();
+	} else {
+		ui_select_bottom();
+		PrintText("\n Failed to mount target device!");
+	}
+	
     ipc_setArm9SyncBits(6);
 
     rtos_setIrqFunc(RTOS_IRQ_VBLANK, vblankIrq);

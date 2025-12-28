@@ -1,0 +1,9 @@
+# 8 bit bitmap
+-gB8
+
+# use lz77 compression
+-gzl
+
+# bitmap format
+-gb
+
